@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fee Balance Portal - Entanda Secondary</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f8fb; }
+    h1 { color: #004466; }
+    input { width: 100%; padding: 10px; font-size: 16px; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+    th { background-color: #0074A2; color: white; }
+    caption { font-size: 1.2em; font-weight: bold; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <h1>Check Student Fee Balance</h1>
+  <input type="text" id="admSearch" placeholder="Enter Adm No to View Fee Balance" onkeyup="searchFeeBalance()" />
+
+  <div id="feeBalanceResult"></div>
+
+  <script>
+    function searchFeeBalance() {
+      const adm = document.getElementById("admSearch").value.trim().toLowerCase();
+      const feeBalances = JSON.parse(localStorage.getItem("feeBalances") || "[]");
+      const student = feeBalances.find(s => s.adm.toLowerCase() === adm);
+      const result = document.getElementById("feeBalanceResult");
+      result.innerHTML = "";
+
+      if (!student) {
+        result.innerHTML = "<p>No fee records found.</p>";
+        return;
+      }
+
+      const table = document.createElement("table");
+      table.innerHTML = `
+        <caption>${student.name} (${student.form.toUpperCase()})</caption>
+        <thead>
+          <tr>
+            <th>Term</th>
+            <th>Amount Paid</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Term 1</td><td>${student.term1Paid}</td><td>${student.term1Bal}</td></tr>
+          <tr><td>Term 2</td><td>${student.term2Paid}</td><td>${student.term2Bal}</td></tr>
+          <tr><td>Term 3</td><td>${student.term3Paid}</td><td>${student.term3Bal}</td></tr>
+          <tr style="font-weight:bold;">
+            <td>Total</td>
+            <td>${student.totalPaid}</td>
+            <td>${student.totalBal}</td>
+          </tr>
+        </tbody>
+      `;
+
+      result.appendChild(table);
+    }
+  </script>
+
+</body>
+</html>

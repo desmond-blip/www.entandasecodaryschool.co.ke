@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>High School Teacher Portal</title>
+  <link rel="stylesheet" href="teacher_portal.css" />
+</head>
+<body>
+    <style>
+        body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f9fafc;
+  color: #333;
+}
+
+header {
+  background-color: #002f6c;
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+}
+
+nav {
+  background-color: #004080;
+}
+
+nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+
+nav ul li {
+  margin: 0 15px;
+}
+
+nav ul li a {
+  display: block;
+  padding: 14px 20px;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+nav ul li a:hover {
+  background-color: #0055aa;
+  border-radius: 5px;
+}
+
+main {
+  padding: 30px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.welcome {
+  background-color: #e3f2fd;
+  padding: 20px;
+  border-left: 6px solid #1976d2;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.welcome h2 {
+  margin-top: 0;
+  color: #0d47a1;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  border-left: 4px solid #004080;
+  transition: 0.3s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.card h3 {
+  margin-top: 0;
+  color: #004080;
+}
+
+footer {
+  background-color: #004080;
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+  margin-top: 40px;
+  font-size: 14px;
+}
+
+    </style>
+  <header>
+    <h1>Entanda High School - Teacher Portal</h1>
+  </header>
+
+  <nav>
+    <ul>
+      <li><a href="#">Dashboard</a></li>
+      <li><a href="#">Staff Directory</a></li>
+      <li><a href="#">Announcements</a></li>
+      <li><a href="timetable.html">Timetable</a></li>
+      <li><a href="teachers.html">Logout</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section class="welcome">
+      <h2>Welcome, <span id="staffRole">[Staff Role]</span></h2>
+      <p>This portal allows you to access tools and information related to your role at Entanda High School.</p>
+    </section>
+
+    <section class="cards">
+  <a href="principal.html" class="card">
+    <h3>Principal</h3>
+    <p>View overall school reports, announcements, and strategic plans.</p>
+  </a>
+
+  <a href="deputy.html" class="card">
+    <h3>Deputy Principal</h3>
+    <p>Assist in managing discipline, academics, and teacher supervision.</p>
+  </a>
+
+  <a href="senior.html" class="card">
+    <h3>Senior Teacher</h3>
+    <p>Manage subject departments, mentor junior teachers, and track academic performance.</p>
+  </a>
+
+  <a href="secretary.html" class="card">
+    <h3>Secretary</h3>
+    <p>Handle communication, documentation, and scheduling for the administration.</p>
+  </a>
+
+  <a href="clerk.html" class="card">
+    <h3>Clerk</h3>
+    <p>Update student records, assist in fee tracking, and process reports.</p>
+  </a>
+
+  <a href="examofficer.html" class="card">
+    <h3>Examination Officer</h3>
+    <p>Update student examination records, assist in exams fee tracking, and process performance reports.</p>
+  </a>
+</section>
+
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Entanda High School | All Rights Reserved</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Portal - Entanda Secondary</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f8fb; }
+    h1 { color: #004466; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+    th { background-color: #0074A2; color: white; }
+    button { margin-top: 10px; padding: 6px 10px; background-color: #0074A2; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #005f87; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+  <h1>View Student Scores</h1>
+  <input type="text" id="admSearch" placeholder="Enter Adm No to View" onkeyup="searchStudent()" style="width: 100%; padding: 10px;" />
+
+  <div id="studentScores"></div>
+
+  <script>
+    const subjects = ["english", "kiswahili", "math", "biology", "chemistry", "physics", "geography", "history", "cre", "agriculture", "business"];
+    const formLabels = { form1: "Form 1", form2: "Form 2", form3: "Form 3", form4: "Form 4" };
+    const scores = JSON.parse(localStorage.getItem("scores") || "[]");
+
+    function getGrade(mark) {
+      if (mark >= 80) return "A";
+      if (mark >= 75) return "A-";
+      if (mark >= 70) return "B+";
+      if (mark >= 65) return "B";
+      if (mark >= 60) return "B-";
+      if (mark >= 55) return "C+";
+      if (mark >= 50) return "C";
+      if (mark >= 45) return "C-";
+      if (mark >= 40) return "D+";
+      if (mark >= 35) return "D";
+      if (mark >= 30) return "D-";
+      return "E";
+    }
+
+    function searchStudent() {
+      const adm = document.getElementById("admSearch").value.trim().toLowerCase();
+      const studentScores = scores.filter(s => s.adm.toLowerCase() === adm);
+      const container = document.getElementById("studentScores");
+      container.innerHTML = "";
+
+      if (studentScores.length === 0) {
+        container.innerHTML = "<p>No records found.</p>";
+        return;
+      }
+
+      studentScores.forEach((s, index) => {
+        const table = document.createElement("table");
+        const caption = document.createElement("caption");
+        caption.textContent = `${s.name} (${formLabels[s.form]} - ${s.term.replace("term", "Term ")})`;
+        table.appendChild(caption);
+
+        let html = `<thead><tr><th>Subject</th><th>Marks (%)</th></tr></thead><tbody>`;
+        subjects.forEach(sub => {
+          html += `<tr><td>${sub.charAt(0).toUpperCase() + sub.slice(1)}</td><td>${s[sub] || ''}</td></tr>`;
+        });
+        html += `<tr><td><strong>Total</strong></td><td>${s.total}</td></tr>`;
+        html += `</tbody>`;
+        table.innerHTML = html;
+
+        container.appendChild(table);
+
+        const btn = document.createElement("button");
+        btn.textContent = "Download PDF Report";
+        btn.onclick = () => downloadStudentPDF(s, index + 1, studentScores.length);
+        container.appendChild(btn);
+      });
+    }
+
+    function downloadStudentPDF(student, position, totalStudents) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const formText = formLabels[student.form];
+      const termText = student.term.replace("term", "Term ");
+      const maxTotal = student.form === "form1" ? 1100 : 800;
+
+      const logoBase64 = localStorage.getItem("logoBase64");
+      if (logoBase64) {
+        doc.addImage(logoBase64, 'PNG', 10, 5, 30, 30);
+      }
+
+      doc.setFontSize(16);
+      doc.text("ENTANDA SECONDARY SCHOOL", 60, 15);
+      doc.setFontSize(14);
+      doc.text("REPORT FORM", 85, 25);
+
+      doc.setFontSize(12);
+      doc.text(`Adm No: ${student.adm}`, 20, 40);
+      doc.text(`Name: ${student.name}`, 20, 48);
+      doc.text(`Form: ${formText}`, 20, 56);
+      doc.text(`Term: ${termText}`, 20, 64);
+
+      doc.autoTable({
+        startY: 80,
+        head: [["Subject", "Marks (%)", "Grade"]],
+        body: subjects.map(sub => {
+          const mark = student[sub];
+          return [
+            sub.charAt(0).toUpperCase() + sub.slice(1),
+            mark ? mark + "%" : "",
+            mark ? getGrade(parseInt(mark)) : ""
+          ];
+        }),
+        theme: 'grid',
+        styles: { fontSize: 11, halign: 'center' },
+        headStyles: { fillColor: [0, 116, 162] }
+      });
+
+      const finalY = doc.autoTable.previous.finalY + 10;
+      const total = parseInt(student.total);
+      const percentage = (total / maxTotal) * 100;
+      const generalGrade = getGrade(percentage);
+
+      let recommendation = "";
+      if (["A", "A-", "B+"].includes(generalGrade)) {
+        recommendation = "EXCELLENT, KEEP IT UP!";
+      } else if (["B", "B-"].includes(generalGrade)) {
+        recommendation = "GOOD, KEEP WORKING SMART.";
+      } else if (["C+", "C"].includes(generalGrade)) {
+        recommendation = "FAIR, IMPROVE IN YOUR SUBJECTS.";
+      } else {
+        recommendation = "WORK OUT ON YOUR PERFORMANCE.";
+      }
+
+      doc.setFontSize(12);
+      doc.text(`Total Marks: ${total} / ${maxTotal}`, 20, finalY);
+      doc.text(`Position: ${position} out of ${totalStudents}`, 20, finalY + 8);
+      doc.text(`General Grade: ${generalGrade}`, 20, finalY + 16);
+
+      // Class teacher recommendation
+      doc.text("Class Teacher's Recommendation:", 20, finalY + 26);
+      doc.setFontSize(11);
+      doc.text(recommendation, 25, finalY + 34);
+
+      // Signature and comment box
+      doc.setFontSize(12);
+      doc.text("Signature: _______________________", 20, finalY + 50);
+      doc.text("Teacher's Comment:", 20, finalY + 60);
+      doc.rect(20, finalY + 62, 170, 20); // Comment box
+
+      doc.save(`${student.adm}_report.pdf`);
+    }
+  </script>
+</body>
+</html>

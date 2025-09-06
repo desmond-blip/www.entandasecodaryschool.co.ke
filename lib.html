@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Entanda Secondary School Library</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f4f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #005792;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    section {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #005792;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #005792;
+      color: white;
+    }
+
+    a.button {
+      padding: 6px 12px;
+      background-color: #005792;
+      color: white;
+      border-radius: 5px;
+      text-decoration: none;
+    }
+
+    .button:hover {
+      background-color: #003f66;
+    }
+
+    /* Search box style */
+    #searchInput {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Entanda Secondary School Library System</h1>
+  </header>
+
+  <main>
+    <input type="text" id="searchInput" onkeyup="searchExams()" placeholder="Search exam or subject name (e.g. 'math')">
+
+    <!-- Library Usage -->
+    <section>
+      <h2>Library Usage Guide</h2>
+      <p>The Entanda Secondary School Library is open to all students and staff for academic purposes. Students can read, borrow, and return textbooks, revision books, and reference materials.</p>
+
+      <h3>How to Borrow a Book:</h3>
+      <ul>
+        <li>Search for the book using the catalog or ask the librarian.</li>
+        <li>Present your student ID to borrow.</li>
+        <li>Borrowing is limited to 2 books for 2 weeks.</li>
+      </ul>
+
+      <h3>How to Return a Book:</h3>
+      <ul>
+        <li>Return the book on or before the due date.</li>
+        <li>Late returns will incur penalties.</li>
+      </ul>
+
+      <h3>Library Rules and Regulations:</h3>
+      <ul>
+        <li>Maintain silence at all times.</li>
+        <li>No food or drinks allowed.</li>
+        <li>Do not damage or write in books.</li>
+        <li>Use your ID when borrowing books.</li>
+      </ul>
+    </section>
+
+    <!-- KCSE Past Papers -->
+    <section>
+      <h2>KCSE Past Papers Repository</h2>
+      <table class="searchable-table">
+        <thead>
+          <tr>
+            <th>Paper Name</th>
+            <th>View</th>
+            <th>Download</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>KCSE Math Paper 1 - 2021</td>
+            <td><a class="button" href="kcse/Math_P1_2021.pdf" target="_blank">View</a></td>
+            <td><a class="button" href="kcse/Math_P1_2021.pdf" download>Download</a></td>
+          </tr>
+          <tr>
+            <td>KCSE English Paper 2 - 2020</td>
+            <td><a class="button" href="kcse/English_P2_2020.pdf" target="_blank">View</a></td>
+            <td><a class="button" href="kcse/English_P2_2020.pdf" download>Download</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- School Past Papers -->
+    <section>
+      <h2>Entanda Secondary School Past Papers Repository</h2>
+      <table class="searchable-table">
+        <thead>
+          <tr>
+            <th>Form</th>
+            <th>Exam Name</th>
+            <th>View</th>
+            <th>Download</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Form 1</td>
+            <td>Math Term 1 Exam - 2023</td>
+            <td><a class="button" href="school_papers/form1/term1_exam_2023.pdf" target="_blank">View</a></td>
+            <td><a class="button" href="school_papers/form1/term1_exam_2023.pdf" download>Download</a></td>
+          </tr>
+          <tr>
+            <td>Form 2</td>
+            <td>English Midterm Exam - 2023</td>
+            <td><a class="button" href="school_papers/form2/midterm_exam_2023.pdf" target="_blank">View</a></td>
+            <td><a class="button" href="school_papers/form2/midterm_exam_2023.pdf" download>Download</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Notes Repository -->
+    <section>
+      <h2>Get Notes (Form 1 - Form 4)</h2>
+      <table class="searchable-table">
+        <thead>
+          <tr>
+            <th>Form</th>
+            <th>Subject / Topic</th>
+            <th>View</th>
+            <th>Download</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Form 1</td>
+            <td>Biology - Cells</td>
+            <td><a class="button" href="notes/form1/biology_cells.pdf" target="_blank">View</a></td>
+            <td><a class="button" href="notes/form1/biology_cells.pdf" download>Download</a></td>
+          </tr>
+          <tr>
+            <td>Form 3</td>
+            <td>Math - Trigonometry</td>
+            <td><a class="button" href="notes/form3/math_trig.pdf" target="_blank">View</a></td>
+            <td><a class="button" href="notes/form3/math_trig.pdf" download>Download</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- JavaScript Search Logic -->
+  <script>
+    function searchExams() {
+      const input = document.getElementById("searchInput").value.toLowerCase();
+      const tables = document.querySelectorAll(".searchable-table");
+
+      tables.forEach(table => {
+        const rows = table.querySelectorAll("tbody tr");
+        rows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          row.style.display = text.includes(input) ? "" : "none";
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>

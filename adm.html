@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Entanda Secondary - Form One Admission</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7f8;
+      padding: 40px;
+    }
+
+    .container {
+      background-color: #fff;
+      max-width: 700px;
+      margin: auto;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      color: #555;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="tel"],
+    input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+
+    .file-note {
+      font-size: 13px;
+      color: #777;
+    }
+
+    button,
+    .download-btn {
+      background-color: #007bff;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      display: inline-block;
+      margin: 10px 5px 0 0;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover,
+    .download-btn:hover {
+      background-color: #0056b3;
+    }
+
+    .downloads {
+      margin-top: 20px;
+    }
+
+    .name-display {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Entanda Secondary School - Form One Admission</h2>
+
+    <form id="admissionForm">
+      <label for="fullname">Full Name</label>
+      <input type="text" id="fullname" name="fullname" required>
+
+      <label for="wherefrom">Where From</label>
+      <input type="text" id="wherefrom" name="wherefrom" required>
+
+      <label for="guardianname">Guardian Name</label>
+      <input type="text" id="guardianname" name="guardianname" required>
+
+      <label for="guardiannumber">Guardian Phone Number</label>
+      <input type="tel" id="guardiannumber" name="guardiannumber" required pattern="[0-9]{10}" placeholder="07XXXXXXXX">
+
+      <label for="primaryschool">Primary School Name</label>
+      <input type="text" id="primaryschool" name="primaryschool" required>
+
+      <label for="indexnumber">Primary Index Number</label>
+      <input type="text" id="indexnumber" name="indexnumber" required>
+
+      <label for="marks">Marks Scored</label>
+      <input type="number" id="marks" name="marks" min="0" max="500" required>
+
+      <label for="resultslip">Upload Result Slip (.jpg)</label>
+      <input type="file" id="resultslip" name="resultslip" accept=".jpg" required>
+      <div class="file-note">Upload a clear JPG scan of the result slip.</div>
+
+      <label for="birthcert">Upload Birth Certificate (.jpg)</label>
+      <input type="file" id="birthcert" name="birthcert" accept=".jpg" required>
+      <div class="file-note">Upload a clear JPG scan of the birth certificate.</div>
+
+      <button type="button" onclick="submitDetails()">Submit Details</button>
+    </form>
+
+    <div class="name-display hidden" id="nameDisplay"></div>
+
+    <div class="downloads hidden" id="downloadsSection">
+      <h3>Download Documents</h3>
+      <button onclick="downloadAdmissionLetter()" class="download-btn">Download Admission Letter (PDF)</button>
+      <a href="fees.pdf.docx" class="download-btn" download>Download Fee Structure (PDF)</a>
+    </div>
+  </div>
+
+<script>
+let storedStudent;
+
+function submitDetails() {
+  const fullname = document.getElementById('fullname').value.trim();
+  const wherefrom = document.getElementById('wherefrom').value.trim();
+  const guardianname = document.getElementById('guardianname').value.trim();
+  const guardiannumber = document.getElementById('guardiannumber').value.trim();
+  const primaryschool = document.getElementById('primaryschool').value.trim();
+  const indexnumber = document.getElementById('indexnumber').value.trim();
+  const marks = document.getElementById('marks').value.trim();
+  const resultSlipFile = document.getElementById('resultslip').files[0];
+  const birthCertFile = document.getElementById('birthcert').files[0];
+
+  if (!fullname || !resultSlipFile || !birthCertFile) {
+    alert("Please fill in all fields and upload required documents.");
+    return;
+  }
+
+  const reader1 = new FileReader();
+  const reader2 = new FileReader();
+
+  reader1.onload = function (e1) {
+    const resultSlipBase64 = e1.target.result;
+
+    reader2.onload = function (e2) {
+      const birthCertBase64 = e2.target.result;
+
+      const admNo = generateAdmNo();
+      storedStudent = {
+        adm: admNo,
+        name: fullname,
+        origin: wherefrom,
+        guardian: guardianname,
+        gphone: guardiannumber,
+        school: primaryschool,
+        index: indexnumber,
+        marks: marks
+      };
+
+      const students = JSON.parse(localStorage.getItem("students")) || [];
+      students.push({...storedStudent, resultSlip: resultSlipBase64, birthCert: birthCertBase64, form: "form1", term: "term1", amount_term1: 0 });
+      localStorage.setItem("students", JSON.stringify(students));
+
+      document.getElementById('nameDisplay').textContent = `Thank you, ${fullname}. You may now download your admission documents below.`;
+      document.getElementById('nameDisplay').classList.remove('hidden');
+      document.getElementById('downloadsSection').classList.remove('hidden');
+    };
+    reader2.readAsDataURL(birthCertFile);
+  };
+  reader1.readAsDataURL(resultSlipFile);
+}
+
+function generateAdmNo() {
+  const prefix = 'F1';
+  const randomNum = Math.floor(Math.random() * 9000) + 1000;
+  return prefix + randomNum;
+}
+
+function downloadAdmissionLetter() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.setFontSize(12);
+  doc.text("ENTANDA SECONDARY SCHOOL", 20, 20);
+  doc.text("YEAR: - 2023", 160, 20);
+  doc.text(`DEAR: ${storedStudent.name}`, 20, 40);
+  doc.text(`ADM NO: ${storedStudent.adm}`, 20, 50);
+
+  doc.text("I am pleased to inform you that you have been selected to join form one in our school, Congratulations.", 20, 70);
+  doc.text("Please get your Primary School's Head teacher to endorse the letter in the spaces provided below.", 20, 80);
+
+  doc.text(`Student’s Full Name: ${storedStudent.name}`, 20, 100);
+  doc.text(`INDEX NO: ${storedStudent.index}   MARKS: ${storedStudent.marks}   SUB-COUNTY: ${storedStudent.origin}`, 20, 110);
+  doc.text(`Primary School: ${storedStudent.school}`, 20, 120);
+  doc.text("Head teacher’s Full Name: ________________________________________", 20, 130);
+  doc.text("Head teacher’s Signature: ____________________ Date: ________________", 20, 140);
+  doc.text("Student’s Signature: ________________________ Date: ________________", 20, 150);
+
+  doc.text("Disclaimer:", 20, 170);
+  doc.text("This letter will be authenticated on being duly certified by the primary school head complete with", 20, 180);
+  doc.text("a certified copy of birth certificate and finally confirmed by the admitting principal.", 20, 190);
+  doc.text("The letter is issued without any erasure or alteration and cannot be changed through any form", 20, 200);
+  doc.text("of endorsement whatsoever; utterance of false documents is an offence punishable by law.", 20, 210);
+
+  doc.save("admission_letter.pdf");
+}
+</script>
+
+</body>
+</html>

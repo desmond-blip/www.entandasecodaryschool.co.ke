@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Deputy Principal - Entanda Secondary School</title>
+  <link rel="stylesheet" href="principal.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Welcome to the Deputy Principal's Office</h1>
+    <p>Entanda Secondary School</p>
+  </header>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f8fb;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #005792;
+      color: white;
+      text-align: center;
+      padding: 40px 20px;
+      border-bottom: 5px solid #003f5c;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 32px;
+    }
+
+    header p {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .profile {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 30px;
+      background: #ffffff;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .profile img {
+      max-width: 200px;
+      height: auto;
+      border-radius: 10px;
+      margin-right: 30px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .bio {
+      flex: 1;
+    }
+
+    .bio h2 {
+      color: #005792;
+      margin-top: 0;
+    }
+
+    .vision-mission {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      padding: 30px;
+      background-color: #eaf4fc;
+    }
+
+    .vision, .mission {
+      flex: 1;
+      min-width: 300px;
+      margin: 10px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      border-left: 5px solid #005792;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .announcements {
+      padding: 30px;
+      background: #ffffff;
+    }
+
+    .announcements h3 {
+      color: #005792;
+      margin-bottom: 15px;
+    }
+
+    .announcements ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .announcements li {
+      background: #f1f9ff;
+      border-left: 4px solid #005792;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+
+    .notice-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .notice-item {
+      background-color: #eaf4fc;
+      padding: 12px;
+      border-radius: 8px;
+      border-left: 4px solid #005792;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      font-weight: bold;
+    }
+
+    button {
+      margin-top: 20px;
+      background-color: #005792;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #003f5c;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: #005792;
+      color: white;
+      font-size: 14px;
+    }
+  </style>
+
+  <section class="profile">
+    <img src="principal.jpg" alt="Deputy Principal Photo">
+    <div class="bio">
+      <h2>Mr. Desmond Mabuka</h2>
+      <p>
+        As the Deputy Principal of Entanda Secondary School, I take this opportunity to speak to all teachers,
+        students, and non-teaching staff on the importance of discipline in building a thriving school environment.
+        Discipline is the foundation of academic excellence, mutual respect, and professional integrity. Let us all
+        commit to upholding punctuality, honesty, responsibility, and order in our daily routines.
+        <br><br>
+        To the students: your future depends on how you conduct yourselves today. Respect time, follow school rules, and strive to be your best.
+        <br><br>
+        To the staff: let’s model the discipline we expect from our learners and contribute to a positive, organized, and nurturing environment.
+        <br><br>
+        To our non-teaching staff: your role in supporting the school is highly valued. Let’s continue serving diligently and professionally.
+      </p>
+    </div>
+  </section>
+
+  <section class="vision-mission">
+    <div class="vision">
+      <h3>🌟 Vision</h3>
+      <p>To be a center of academic excellence producing holistic, empowered and responsible citizens.</p>
+    </div>
+    <div class="mission">
+      <h3>🎯 Mission</h3>
+      <p>To provide quality education that inspires learners to achieve their best through discipline, integrity and innovation.</p>
+    </div>
+  </section>
+
+  <section class="announcements">
+    <h3>📢 Announcements</h3>
+    <ul id="announcementList">
+      <li>✅ KCSE 2025 Results are out. Check the exam release board for details.</li>
+      <li>📌 Form 1, 2, 3, and 4 Term 2 Exams have been released.</li>
+      <li>🗓️ Parents' meeting scheduled for 28th June 2025.</li>
+      <li>🏫 Mid-Term break begins on 5th July 2025.</li>
+    </ul>
+
+    <h4>🗂️ Notice Grid</h4>
+    <div class="notice-grid" id="noticeGrid">
+      <div class="notice-item">📄 KCSE 2023 Release</div>
+      <div class="notice-item">📄 KCSE 2024 Release</div>
+      <div class="notice-item">📝 Form 1 Term 1 Exams</div>
+      <div class="notice-item">📝 Form 1 Term 2 Exams</div>
+      <div class="notice-item">📝 Form 1 Term 3 Exams</div>
+      <div class="notice-item">📝 Form 2 Term 1 Exams</div>
+      <div class="notice-item">📝 Form 3 Term 1 Exams</div>
+      <div class="notice-item">📝 Form 4 Term 1 Exams</div>
+      <div class="notice-item">👪 Parent Meeting: 28 June 2025</div>
+      <div class="notice-item">📅 Term Closing: 12 July 2025</div>
+      <div class="notice-item">📅 Term Opening: 2 September 2025</div>
+    </div>
+
+    <button onclick="downloadNotices()">📥 Download PDF</button>
+  </section>
+
+  <footer>
+    &copy; 2025 Entanda Secondary School. All rights reserved.
+  </footer>
+
+  <script>
+    async function downloadNotices() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(14);
+      doc.text("Entanda Secondary School - Notices & Announcements", 10, 15);
+
+      const listItems = document.querySelectorAll("#announcementList li");
+      let y = 25;
+      listItems.forEach((item) => {
+        doc.text(`- ${item.textContent}`, 10, y);
+        y += 10;
+      });
+
+      doc.text("Notice Grid:", 10, y + 10);
+      y += 20;
+
+      const gridItems = document.querySelectorAll(".notice-item");
+      gridItems.forEach((item) => {
+        doc.text(`• ${item.textContent}`, 10, y);
+        y += 10;
+      });
+
+      doc.save("entanda_notices.pdf");
+    }
+  </script>
+</body>
+</html>

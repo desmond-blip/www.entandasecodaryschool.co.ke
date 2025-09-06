@@ -1,0 +1,364 @@
+<!-- This is your existing clerk.html with the new portal integration added -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Clerk - Entanda Secondary School</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+      background: #005792;
+      color: white;
+      padding: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 40px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      font-size: 14px;
+    }
+    th {
+      background: #005792;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    button {
+      padding: 8px 12px;
+      background-color: #0073e6;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #005bb5;
+    }
+    .export-section, .update-section, .search-section {
+      text-align: center;
+      margin: 20px auto;
+    }
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      background: #fff;
+      padding: 15px;
+      margin: 30px auto;
+      max-width: 1200px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    form input, form select {
+      padding: 10px;
+      font-size: 14px;
+      flex: 1 1 200px;
+    }
+    .search-section input {
+      padding: 10px;
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Clerk Dashboard - Entanda Secondary School</h1>
+
+<h2>Student Entry Form</h2>
+<form id="studentForm" onsubmit="addStudent(event)">
+  <input name="adm" placeholder="Adm No" required />
+  <input name="date" type="date" required />
+  <input name="name" placeholder="Full Name" required />
+  <input name="index" placeholder="KCPE Index" />
+  <input name="bc" placeholder="Birth Cert No" />
+  <input name="origin" placeholder="Origin" />
+  <input name="guardian" placeholder="Guardian Name" />
+  <input name="gphone" placeholder="Guardian Phone" />
+  <input name="school" placeholder="Primary School" />
+  <input name="marks" placeholder="KCPE Marks" />
+  <select name="form" required>
+    <option value="form1">Form 1</option>
+    <option value="form2">Form 2</option>
+    <option value="form3">Form 3</option>
+    <option value="form4">Form 4</option>
+  </select>
+  <select name="term" required>
+    <option value="term1">Term 1</option>
+    <option value="term2">Term 2</option>
+    <option value="term3">Term 3</option>
+  </select>
+  <input name="amount" type="number" placeholder="Amount" required />
+  <button type="submit">Add / Update Student</button>
+</form>
+
+<div class="update-section">
+  <a href="registration.html">
+    <button>Form 1 Registration</button>
+  </a>
+</div>
+
+<div class="update-section">
+  <h2>Update Fees</h2>
+  <input id="updateAdm" placeholder="Admission No" />
+  <input id="updateAmount" placeholder="New Amount" type="number" />
+  <button onclick="updateFeeGlobal()">Update Fee</button>
+</div>
+
+<div class="search-section">
+  <input type="text" id="searchInput" onkeyup="searchStudent()" placeholder="Search by student name..." />
+</div>
+
+<div id="tables"></div>
+
+<div class="update-section">
+  <button onclick="deleteStudentByAdm()">Delete Student by Admission No</button>
+</div>
+
+<script>
+const totalFee = 3500;
+const tableIds = ["form1", "form2", "form3", "form4"];
+const tableNames = ["Form 1", "Form 2", "Form 3", "Form 4"];
+const terms = ['Term 1', 'Term 2', 'Term 3'];
+const termIds = ['term1', 'term2', 'term3'];
+
+let students = JSON.parse(localStorage.getItem("studentsData")) || JSON.parse(localStorage.getItem("students") || "[]");
+
+function saveStudents() {
+  localStorage.setItem("students", JSON.stringify(students));
+  localStorage.setItem("studentsData", JSON.stringify(students));
+}
+
+function addStudent(e) {
+  e.preventDefault();
+  const form = e.target;
+  const formData = new FormData(form);
+  const student = {};
+  formData.forEach((value, key) => student[key] = value.trim());
+  const termKey = student.term;
+  const amountKey = `amount_${termKey}`;
+  student[amountKey] = student.amount;
+  const index = students.findIndex(s => s.adm === student.adm);
+  if (index !== -1) {
+    students[index] = { ...students[index], ...student };
+  } else {
+    students.push(student);
+  }
+  saveStudents();
+  refreshTables();
+  form.reset();
+}
+
+function createTables() {
+  const container = document.getElementById('tables');
+  tableIds.forEach((formId, i) => {
+    terms.forEach((termName, j) => {
+      const termId = `${formId}_${termIds[j]}`;
+      if (termId === "form1_term1") return;
+      const section = document.createElement('section');
+      section.innerHTML = `
+        <h2>${tableNames[i]} - ${termName}</h2>
+        <table id="${termId}">
+          <thead>
+            <tr>
+              <th>No</th><th>Adm No</th><th>Date In</th><th class="name">Name</th>
+              <th>KCPE Index</th><th>Birth Cert No</th><th>Origin</th>
+              <th>Guardian Name</th><th>Guardian Phone</th><th>Primary School</th>
+              <th>KCPE Marks</th><th>Fee Paid</th><th>Balance</th><th>Status</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="export-section">
+          <button onclick="downloadTableAsExcel('${termId}', '${termId}_students.xls')">Download Excel</button>
+        </div>`;
+      container.appendChild(section);
+    });
+  });
+}
+
+function refreshTables() {
+  document.getElementById("tables").innerHTML = "";
+  createTables();
+  students.forEach((s, i) => {
+    const form = s.form;
+    terms.forEach((term, j) => {
+      const termKey = termIds[j];
+      const key = `${form}_${termKey}`;
+      if (key === "form1_term1") return;
+      const paid = s[`amount_${termKey}`];
+      if (!paid) return;
+      const table = document.getElementById(key);
+      if (!table) return;
+      const row = table.querySelector("tbody").insertRow();
+      const balance = totalFee - parseFloat(paid);
+      const status = balance <= 0 ? "Cleared" : "Pending";
+      row.innerHTML = `
+        <td>${table.rows.length - 1}</td>
+        <td>${s.adm}</td>
+        <td>${s.date}</td>
+        <td class="name">${s.name}</td>
+        <td>${s.index || ''}</td>
+        <td>${s.bc || ''}</td>
+        <td>${s.origin || ''}</td>
+        <td>${s.guardian || ''}</td>
+        <td>${s.gphone || ''}</td>
+        <td>${s.school || ''}</td>
+        <td>${s.marks || ''}</td>
+        <td>${paid}</td>
+        <td>${balance}</td>
+        <td>${status}</td>
+        <td><button onclick="downloadSingleRow(this)">Download</button></td>`;
+    });
+  });
+  updateFeeBalanceStorage();
+  mergePortalStudents(); // NEW
+}
+
+function mergePortalStudents() {
+  const portal = JSON.parse(localStorage.getItem("portalStudents")) || [];
+  let changed = false;
+  portal.forEach(p => {
+    const exists = students.find(s => s.adm === p.adm);
+    if (!exists) {
+      students.push(p);
+      changed = true;
+    }
+  });
+  if (changed) {
+    saveStudents();
+    setTimeout(refreshTables, 100); // Refresh safely after saving
+  }
+}
+
+function updateFeeBalanceStorage() {
+  const feeBalances = students.map(s => {
+    const t1 = parseFloat(s.amount_term1 || 0);
+    const t2 = parseFloat(s.amount_term2 || 0);
+    const t3 = parseFloat(s.amount_term3 || 0);
+    return {
+      adm: s.adm,
+      name: s.name,
+      form: s.form,
+      term1Paid: t1,
+      term1Bal: totalFee - t1,
+      term2Paid: t2,
+      term2Bal: totalFee - t2,
+      term3Paid: t3,
+      term3Bal: totalFee - t3,
+      totalPaid: t1 + t2 + t3,
+      totalBal: 3 * totalFee - (t1 + t2 + t3)
+    };
+  });
+  localStorage.setItem("feeBalances", JSON.stringify(feeBalances));
+}
+
+function updateFeeGlobal() {
+  const adm = document.getElementById("updateAdm").value.trim();
+  const newAmount = document.getElementById("updateAmount").value.trim();
+  if (!adm || !newAmount) return alert("Fill both admission number and amount.");
+  let updated = false;
+  students.forEach(student => {
+    const term = student.term;
+    const key = `amount_${term}`;
+    if (student.adm === adm) {
+      student[key] = newAmount;
+      updated = true;
+    }
+  });
+  if (updated) {
+    saveStudents();
+    refreshTables();
+    alert("Fee updated.");
+  } else alert("Student not found.");
+  document.getElementById("updateAdm").value = '';
+  document.getElementById("updateAmount").value = '';
+}
+
+function searchStudent() {
+  const input = document.getElementById("searchInput").value.toLowerCase();
+  document.querySelectorAll("tbody tr").forEach(row => {
+    const nameCell = row.querySelector(".name");
+    row.style.display = nameCell && nameCell.textContent.toLowerCase().includes(input) ? "" : "none";
+  });
+}
+
+function downloadSingleRow(btn) {
+  const row = btn.closest("tr");
+  const cells = row.querySelectorAll("td");
+  const studentData = {
+    no: cells[0].innerText,
+    adm: cells[1].innerText,
+    date: cells[2].innerText,
+    name: cells[3].innerText,
+    index: cells[4].innerText,
+    bc: cells[5].innerText,
+    origin: cells[6].innerText,
+    guardian: cells[7].innerText,
+    gphone: cells[8].innerText,
+    school: cells[9].innerText,
+    marks: cells[10].innerText,
+    paid: cells[11].innerText,
+    balance: cells[12].innerText,
+    status: cells[13].innerText,
+  };
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(18);
+  doc.text("Entanda Secondary School", 20, 20);
+  doc.setFontSize(14);
+  doc.text(`Student Fee Report`, 20, 30);
+  doc.line(20, 35, 190, 35);
+
+  let y = 45;
+  Object.entries(studentData).forEach(([key, val]) => {
+    const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1');
+    doc.text(`${label}: ${val}`, 20, y);
+    y += 10;
+  });
+
+  doc.setFontSize(12);
+  doc.text("Generated by Clerk Dashboard", 20, y + 10);
+  doc.save(`${studentData.name.replace(/\s+/g, '_')}_report.pdf`);
+}
+
+function downloadTableAsExcel(tableId, filename = 'student_data.xls') {
+  const table = document.getElementById(tableId);
+  if (!table) return alert('Table not found.');
+  const html = table.outerHTML.replace(/ /g, '%20');
+  const a = document.createElement('a');
+  a.href = 'data:application/vnd.ms-excel,' + html;
+  a.download = filename;
+  a.click();
+}
+
+function deleteStudentByAdm() {
+  const adm = prompt("Enter admission number to delete:");
+  if (!adm) return;
+  const initialLength = students.length;
+  students = students.filter(s => s.adm !== adm);
+  if (students.length < initialLength) {
+    saveStudents();
+    refreshTables();
+    alert("Student deleted successfully.");
+  } else {
+    alert("Student not found.");
+  }
+}
+
+refreshTables();
+</script>
+</body>
+</html>

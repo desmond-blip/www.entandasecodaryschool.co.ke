@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Form 1 Term 1 Table</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #f1f8e9);
+      padding: 20px;
+      margin: 0;
+    }
+    h2, h3 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px auto;
+      background-color: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: center;
+      font-size: 13px;
+    }
+    th {
+      background-color: #00695c;
+      color: white;
+    }
+    input, select, button {
+      padding: 8px;
+      margin: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #00796b;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background-color: #004d40;
+    }
+    .form-section, .update-section {
+      margin-bottom: 20px;
+      text-align: center;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.05);
+    }
+    .form-section input[type="file"] {
+      padding: 2px;
+      margin-top: 4px;
+    }
+    .form-section input, .form-section select {
+      width: 160px;
+      margin: 3px;
+    }
+    .img-preview {
+      height: 60px;
+      display: block;
+      margin: 0 auto 5px;
+      border: 1px dashed #ccc;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <h2>Form 1 Term 1 Table</h2>
+
+  <div class="form-section">
+    <input type="text" id="adm" placeholder="Adm No">
+    <input type="text" id="name" placeholder="Full Name">
+    <input type="text" id="index" placeholder="KCPE Index">
+    <input type="text" id="bc" placeholder="Birth Cert No">
+    <input type="text" id="origin" placeholder="Origin">
+    <input type="text" id="guardian" placeholder="Guardian Name">
+    <input type="text" id="gphone" placeholder="Guardian Phone">
+    <input type="text" id="school" placeholder="Primary School">
+    <input type="text" id="marks" placeholder="KCPE Marks">
+    <input type="number" id="amount_term1" placeholder="Amount Paid">
+    
+    <label>Result Slip:</label><br>
+    <input type="file" accept="image/*" onchange="previewImage(this, 'resultSlip', 'resultImg')"><br>
+    <img id="resultImg" class="img-preview" alt="Result Preview">
+    <input type="hidden" id="resultSlip">
+
+    <label>Birth Cert:</label><br>
+    <input type="file" accept="image/*" onchange="previewImage(this, 'birthCert', 'birthImg')"><br>
+    <img id="birthImg" class="img-preview" alt="Birth Cert Preview">
+    <input type="hidden" id="birthCert">
+
+    <input type="date" id="date" placeholder="Check-In Date">
+    <input type="hidden" id="form" value="form1">
+    <input type="hidden" id="term" value="term1">
+    <br>
+    <button onclick="addStudent()">Add Student</button>
+  </div>
+
+  <div class="update-section">
+    <input type="text" id="updateAdm" placeholder="Adm No to Update">
+    <input type="number" id="updateAmount" placeholder="New Amount Paid">
+    <button onclick="updateFeeGlobal()">Update Fee</button>
+    <br>
+    <input type="text" id="deleteAdm" placeholder="Adm No to Delete">
+    <button onclick="deleteStudent()">Delete Student</button>
+    <br>
+    <input type="text" id="searchName" placeholder="Search by Name" oninput="renderForm1Tables()">
+  </div>
+
+  <div id="form1Tables"></div>
+
+  <script>
+    const totalFee = 3500;
+    let students = JSON.parse(localStorage.getItem("students") || "[]");
+
+    function previewImage(fileInput, inputId, imgId) {
+      const file = fileInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById(inputId).value = e.target.result;
+          document.getElementById(imgId).src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function addStudent() {
+      const adm = document.getElementById("adm").value;
+      const name = document.getElementById("name").value;
+      const index = document.getElementById("index").value;
+      const bc = document.getElementById("bc").value;
+      const origin = document.getElementById("origin").value;
+      const guardian = document.getElementById("guardian").value;
+      const gphone = document.getElementById("gphone").value;
+      const school = document.getElementById("school").value;
+      const marks = document.getElementById("marks").value;
+      const amount_term1 = document.getElementById("amount_term1").value;
+      const resultSlip = document.getElementById("resultSlip").value;
+      const birthCert = document.getElementById("birthCert").value;
+      const date = document.getElementById("date").value;
+      const form = document.getElementById("form").value;
+      const term = document.getElementById("term").value;
+
+      const student = {
+        adm, name, index, bc, origin, guardian, gphone, school,
+        marks, amount_term1, resultSlip, birthCert, date, form, term
+      };
+
+      students.push(student);
+      localStorage.setItem("students", JSON.stringify(students));
+      document.querySelectorAll(".form-section input").forEach(input => input.value = "");
+      document.getElementById("resultImg").src = "";
+      document.getElementById("birthImg").src = "";
+      renderForm1Tables();
+    }
+
+    function updateFeeGlobal() {
+      const adm = document.getElementById("updateAdm").value;
+      const amount = document.getElementById("updateAmount").value;
+      const student = students.find(s => s.adm === adm && s.form === "form1" && s.term === "term1");
+      if (student) {
+        student.amount_term1 = amount;
+        localStorage.setItem("students", JSON.stringify(students));
+        alert("Amount updated successfully.");
+        renderForm1Tables();
+      } else {
+        alert("Student not found.");
+      }
+    }
+
+    function deleteStudent() {
+      const adm = document.getElementById("deleteAdm").value.trim();
+      if (!adm) return alert("Enter Admission Number");
+
+      const index = students.findIndex(s => s.adm === adm && s.form === "form1" && s.term === "term1");
+      if (index === -1) return alert("Student not found in Form 1 Term 1");
+
+      if (confirm(`Are you sure you want to delete Adm No ${adm}?`)) {
+        students.splice(index, 1);
+        localStorage.setItem("students", JSON.stringify(students));
+        document.getElementById("deleteAdm").value = "";
+        renderForm1Tables();
+        alert("Student deleted.");
+      }
+    }
+
+    function renderForm1Tables() {
+      const container = document.getElementById("form1Tables");
+      container.innerHTML = "";
+
+      const table = document.createElement("table");
+      const header = `
+        <thead>
+          <tr>
+            <th>No</th><th>Adm No</th><th>Check-In Date</th><th>Name</th><th>KCPE Index</th>
+            <th>Birth Cert</th><th>Origin</th><th>Guardian</th><th>Phone</th>
+            <th>School</th><th>Marks</th><th>Amount Paid</th><th>Balance</th>
+            <th>Status</th><th>Result Slip</th><th>Birth Cert Image</th><th>Download PDF</th>
+          </tr>
+        </thead>
+      `;
+      table.innerHTML = header;
+      const tbody = document.createElement("tbody");
+
+      const searchName = document.getElementById("searchName")?.value.toLowerCase() || "";
+      let count = 1;
+
+      students.forEach((s, i) => {
+        if (s.form === "form1" && s.term === "term1" && s.name.toLowerCase().includes(searchName)) {
+          const paid = parseFloat(s.amount_term1) || 0;
+          const balance = totalFee - paid;
+          const status = balance <= 0 ? "Cleared" : "Pending";
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${count++}</td>
+            <td>${s.adm}</td>
+            <td>${s.date}</td>
+            <td>${s.name}</td>
+            <td>${s.index || ''}</td>
+            <td>${s.bc || ''}</td>
+            <td>${s.origin || ''}</td>
+            <td>${s.guardian || ''}</td>
+            <td>${s.gphone || ''}</td>
+            <td>${s.school || ''}</td>
+            <td>${s.marks || ''}</td>
+            <td>${paid}</td>
+            <td>${balance}</td>
+            <td>${status}</td>
+            <td><img src="${s.resultSlip}" class="img-preview" /></td>
+            <td><img src="${s.birthCert}" class="img-preview" /></td>
+            <td><button onclick="downloadPDF(${i})">PDF</button></td>
+          `;
+          tbody.appendChild(row);
+        }
+      });
+
+      table.appendChild(tbody);
+      container.appendChild(document.createElement("h3")).innerText = "Form 1 - Term 1";
+      container.appendChild(table);
+
+      const excelBtn = document.createElement("button");
+      excelBtn.textContent = "Download Excel";
+      excelBtn.onclick = exportToExcel;
+      container.appendChild(excelBtn);
+    }
+
+    function downloadPDF(index) {
+      const s = students[index];
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(12);
+      doc.text(`Entanda Secondary School`, 20, 20);
+      doc.text(`Student Fee Record - Form 1 Term 1`, 20, 30);
+      doc.text(`Name: ${s.name}`, 20, 40);
+      doc.text(`Adm No: ${s.adm}`, 20, 50);
+      doc.text(`KCPE Index: ${s.index || ''}`, 20, 60);
+      doc.text(`Primary School: ${s.school || ''}`, 20, 70);
+      doc.text(`KCPE Marks: ${s.marks || ''}`, 20, 80);
+      doc.text(`Amount Paid: ${s.amount_term1}`, 20, 90);
+      doc.text(`Balance: ${totalFee - (parseFloat(s.amount_term1) || 0)}`, 20, 100);
+      doc.text(`Guardian: ${s.guardian || ''}`, 20, 110);
+      doc.text(`Phone: ${s.gphone || ''}`, 20, 120);
+      doc.text(`Check-In Date: ${s.date}`, 20, 130);
+      doc.save(`${s.name}_Form1_Term1.pdf`);
+    }
+
+    function exportToExcel() {
+      let csv = "No,Adm No,Check-In Date,Name,KCPE Index,Birth Cert,Origin,Guardian,Phone,School,Marks,Amount Paid,Balance,Status\n";
+      let count = 1;
+      students.forEach(s => {
+        if (s.form === "form1" && s.term === "term1") {
+          const paid = parseFloat(s.amount_term1) || 0;
+          const balance = totalFee - paid;
+          const status = balance <= 0 ? "Cleared" : "Pending";
+          csv += `${count++},${s.adm},${s.date},${s.name},${s.index || ''},${s.bc || ''},${s.origin || ''},${s.guardian || ''},${s.gphone || ''},${s.school || ''},${s.marks || ''},${paid},${balance},${status}\n`;
+        }
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute("download", "form1_term1_students.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    window.onload = renderForm1Tables;
+  </script>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Scores - Entanda Secondary School</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f8fb;
+      padding: 20px;
+    }
+    h1, h2, h3 {
+      color: #004466;
+    }
+    input, select, button {
+      margin: 5px;
+      padding: 10px;
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: left;
+    }
+    th {
+      background: #0074A2;
+      color: #fff;
+    }
+    section {
+      margin-bottom: 40px;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+<h1>Student Subject Scores - Entanda Secondary School</h1>
+
+<form id="studentForm" onsubmit="addOrUpdateScore(event)">
+  <input name="adm" placeholder="Adm No" required />
+  <input name="name" placeholder="Full Name" required />
+  <select name="form" required>
+    <option value="form1">Form 1</option>
+    <option value="form2">Form 2</option>
+    <option value="form3">Form 3</option>
+    <option value="form4">Form 4</option>
+  </select>
+  <select name="term" required>
+    <option value="term1">Term 1</option>
+    <option value="term2">Term 2</option>
+    <option value="term3">Term 3</option>
+  </select><br/>
+  <input name="english" type="number" placeholder="English" min="0" max="100" />
+  <input name="kiswahili" type="number" placeholder="Kiswahili" min="0" max="100" />
+  <input name="math" type="number" placeholder="Math" min="0" max="100" />
+  <input name="biology" type="number" placeholder="Biology" min="0" max="100" />
+  <input name="chemistry" type="number" placeholder="Chemistry" min="0" max="100" />
+  <input name="physics" type="number" placeholder="Physics" min="0" max="100" />
+  <input name="geography" type="number" placeholder="Geography" min="0" max="100" />
+  <input name="history" type="number" placeholder="History" min="0" max="100" />
+  <input name="cre" type="number" placeholder="CRE" min="0" max="100" />
+  <input name="agriculture" type="number" placeholder="Agriculture" min="0" max="100" />
+  <input name="business" type="number" placeholder="Business" min="0" max="100" />
+  <br/>
+  <button type="submit">Add/Update</button>
+</form>
+
+<input type="text" id="searchInput" placeholder="Search by Name or Adm No" onkeyup="searchScores()" style="width: 100%; margin-top: 20px;">
+
+<div id="tablesContainer"></div>
+
+<script>
+const forms = ["form1", "form2", "form3", "form4"];
+const terms = ["term1", "term2", "term3"];
+const subjects = ["english", "kiswahili", "math", "biology", "chemistry", "physics", "geography", "history", "cre", "agriculture", "business"];
+const formLabels = { form1: "Form 1", form2: "Form 2", form3: "Form 3", form4: "Form 4" };
+let scores = JSON.parse(localStorage.getItem("scores") || "[]");
+
+function getGrade(mark) {
+  if (mark >= 80) return "A";
+  if (mark >= 70) return "B";
+  if (mark >= 60) return "C";
+  if (mark >= 50) return "D";
+  if (mark >= 40) return "E";
+  return "F";
+}
+
+function getGeneralGrade(total, maxTotal) {
+  if ((maxTotal === 1100 && total >= 800) || (maxTotal === 800 && total >= 700)) return "A Plain";
+  const percentage = (total / maxTotal) * 100;
+  if (percentage >= 70) return "B";
+  if (percentage >= 60) return "C";
+  if (percentage >= 50) return "D";
+  if (percentage >= 40) return "E";
+  return "F";
+}
+
+function addOrUpdateScore(event) {
+  event.preventDefault();
+  const form = event.target;
+  const data = Object.fromEntries(new FormData(form).entries());
+  data.total = subjects.reduce((sum, sub) => sum + (parseInt(data[sub]) || 0), 0);
+  const index = scores.findIndex(s => s.adm === data.adm && s.term === data.term && s.form === data.form);
+  if (index > -1) scores[index] = data;
+  else scores.push(data);
+  localStorage.setItem("scores", JSON.stringify(scores));
+  form.reset();
+  createTables();
+}
+
+function createTables() {
+  const container = document.getElementById("tablesContainer");
+  container.innerHTML = "";
+  forms.forEach(form => {
+    const section = document.createElement("section");
+    const maxTotal = form === "form1" ? 1100 : 800;
+    section.innerHTML = `<h2>${formLabels[form]} (Out of ${maxTotal} Marks)</h2>`;
+    terms.forEach(term => {
+      const tableId = `${form}_${term}`;
+      section.innerHTML += `
+        <h3>${term.replace("term", "Term ")}</h3>
+        <table id="${tableId}Table">
+          <thead>
+            <tr>
+              <th>No</th><th>Adm No</th><th>Name</th>
+              ${subjects.map(s => `<th>${s.charAt(0).toUpperCase() + s.slice(1)}</th>`).join("")}
+              <th>Total</th><th>PDF</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <button onclick="downloadExcel('${tableId}')">Download Excel</button>
+      `;
+    });
+
+    // Add Delete Button only at last section (Form 4)
+    if (form === "form4") {
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "Delete Student by Adm No";
+      deleteBtn.style.marginTop = "20px";
+      deleteBtn.onclick = () => {
+        const adm = prompt("Enter Admission Number to Delete:");
+        if (adm) deleteStudentByAdm(adm.trim());
+      };
+      section.appendChild(deleteBtn);
+    }
+
+    container.appendChild(section);
+  });
+  displayScores();
+}
+
+function displayScores(filter = "") {
+  forms.forEach(f => {
+    terms.forEach(t => {
+      const tableId = `${f}_${t}`;
+      const tbody = document.getElementById(`${tableId}Table`).querySelector("tbody");
+      tbody.innerHTML = "";
+      const filteredScores = scores
+        .filter(s => s.form === f && s.term === t)
+        .filter(s => s.name.toLowerCase().includes(filter) || s.adm.includes(filter))
+        .sort((a, b) => b.total - a.total);
+      filteredScores.forEach((s, i) => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${i + 1}</td>
+          <td>${s.adm}</td>
+          <td>${s.name}</td>
+          ${subjects.map(sub => `<td>${s[sub] ? s[sub] + "%" : ""}</td>`).join("")}
+          <td>${s.total}</td>
+          <td><button onclick='downloadStudentPDF(${JSON.stringify(s)}, ${i + 1}, ${filteredScores.length})'>PDF</button></td>
+        `;
+      });
+    });
+  });
+}
+
+function deleteStudentByAdm(adm) {
+  const initialLength = scores.length;
+  scores = scores.filter(s => s.adm !== adm);
+  if (scores.length < initialLength) {
+    localStorage.setItem("scores", JSON.stringify(scores));
+    alert(`Student with Adm No ${adm} deleted.`);
+    createTables();
+  } else {
+    alert(`No student found with Adm No ${adm}.`);
+  }
+}
+
+function downloadStudentPDF(student, position, totalStudents) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const formText = formLabels[student.form];
+  const termText = student.term.replace("term", "Term ");
+  const maxTotal = student.form === "form1" ? 1100 : 800;
+
+  const logoBase64 = localStorage.getItem("logoBase64");
+  if (logoBase64) {
+    doc.addImage(logoBase64, 'PNG', 10, 5, 30, 30);
+  }
+
+  doc.setFontSize(16);
+  doc.text("ENTANDA SECONDARY SCHOOL", 60, 15);
+  doc.setFontSize(14);
+  doc.text("REPORT FORM", 85, 25);
+
+  doc.setFontSize(12);
+  doc.text(`Adm No: ${student.adm}`, 20, 40);
+  doc.text(`Name: ${student.name}`, 20, 48);
+  doc.text(`Form: ${formText}`, 20, 56);
+  doc.text(`Term: ${termText}`, 20, 64);
+
+  doc.autoTable({
+    startY: 80,
+    head: [["Subject", "Marks (%)", "Grade"]],
+    body: subjects.map(sub => {
+      const mark = student[sub];
+      return [
+        sub.charAt(0).toUpperCase() + sub.slice(1),
+        mark ? mark + "%" : "",
+        mark ? getGrade(parseInt(mark)) : ""
+      ];
+    }),
+    theme: 'grid',
+    styles: { fontSize: 11, halign: 'center' },
+    headStyles: { fillColor: [0, 116, 162] }
+  });
+
+  const finalY = doc.lastAutoTable.finalY + 10;
+  doc.text(`Total Marks: ${student.total} / ${maxTotal}`, 20, finalY);
+  doc.text(`General Grade: ${getGeneralGrade(student.total, maxTotal)}`, 20, finalY + 8);
+  doc.text(`Position: ${position} of ${totalStudents}`, 20, finalY + 16);
+  doc.text("Class Teacher's Recommendation:", 20, finalY + 25);
+  doc.rect(20, finalY + 28, 170, 20);
+  doc.text("Signature:", 20, finalY + 55);
+  doc.rect(40, finalY + 52, 60, 8);
+  doc.text("Opening Date:", 110, finalY + 55);
+  doc.rect(140, finalY + 52, 50, 8);
+
+  doc.save(`${student.adm}_report.pdf`);
+}
+
+function downloadExcel(tableId) {
+  const table = document.getElementById(`${tableId}Table`);
+  const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
+    const cells = tr.querySelectorAll("td");
+    const adm = cells[1].innerText;
+    const name = cells[2].innerText;
+    const subjectScores = subjects.map((_, i) => {
+      const raw = cells[i + 3].innerText.replace('%', '').trim();
+      const score = raw === "" ? "" : parseInt(raw);
+      return [
+        score === "" ? "" : score,
+        score === "" ? "" : getGrade(score)
+      ];
+    });
+    const total = parseInt(cells[cells.length - 3].innerText);
+    const maxTotal = tableId.includes("form1") ? 1100 : 800;
+    const generalGrade = getGeneralGrade(total, maxTotal);
+    return [
+      cells[0].innerText, adm, name,
+      ...subjectScores.flat(), total, generalGrade
+    ];
+  });
+
+  const headers = ["No", "Adm No", "Name"];
+  subjects.forEach(s => {
+    headers.push(`${s.charAt(0).toUpperCase() + s.slice(1)} (%)`);
+    headers.push(`${s.charAt(0).toUpperCase() + s.slice(1)} Grade`);
+  });
+  headers.push("Total", "General Grade");
+
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, tableId);
+  XLSX.writeFile(wb, `${tableId}.xlsx`);
+}
+
+function searchScores() {
+  const query = document.getElementById("searchInput").value.toLowerCase();
+  displayScores(query);
+}
+
+window.onload = createTables;
+</script>
+
+</body>
+</html>
